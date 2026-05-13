@@ -20,10 +20,10 @@ connectDB();
 const app = express();
 
 // Security middleware
-app.use(helmet());
+// app.use(helmet()); 
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: true, // Allows all origins
   credentials: true,
 }));
 
