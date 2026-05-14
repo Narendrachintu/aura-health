@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API = axios.create({
   baseURL: 'https://aura-health-eight.onrender.com/api',
+  withCredentials: true,
 });
 
 API.interceptors.request.use((config) => {
