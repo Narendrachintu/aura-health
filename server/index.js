@@ -23,8 +23,7 @@ const app = express();
 // app.use(helmet()); 
 
 app.use(cors({
-  origin: 'https://aura-health-eight.vercel.app',
-  credentials: true,
+  origin: '*', // Most permissive for troubleshooting
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
