@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://aura-health-eight.onrender.com/api',
+  baseURL: 'https://aura-health-626y.onrender.com/api',
 });
 
 API.interceptors.request.use((config) => {

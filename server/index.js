@@ -23,7 +23,7 @@ const app = express();
 // app.use(helmet()); 
 
 app.use(cors({
-  origin: '*', // Most permissive for troubleshooting
+  origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
