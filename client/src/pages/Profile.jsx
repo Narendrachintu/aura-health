@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateProfile, selectAuthUser, selectAuthStatus } from '../store/authSlice';
 import toast from 'react-hot-toast';
+import axios from '../axios';
 
 export default function Profile() {
   const dispatch = useDispatch();
@@ -23,6 +24,8 @@ export default function Profile() {
       targetWeight: 70,
     },
   });
+
+  const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -79,6 +82,20 @@ export default function Profile() {
       return { bmi, category };
     }
     return null;
+  };
+
+  const handleMagicSeed = async () => {
+    setSeeding(true);
+    try {
+      const res = await axios.post('/api/seed-my-data');
+      if (res.data.success) {
+        toast.success('🎉 Magic! 10 days of data generated!');
+      }
+    } catch (err) {
+      toast.error('Failed to generate data');
+    } finally {
+      setSeeding(false);
+    }
   };
 
   const bmiData = calculateBMI();
@@ -284,15 +301,15 @@ export default function Profile() {
 
           <div className="bg-indigo-900 p-8 rounded-[2.5rem] shadow-2xl text-white relative overflow-hidden">
              <div className="relative z-10">
-                <h3 className="text-lg font-bold mb-2">Health Milestone</h3>
-                <p className="text-indigo-200 text-sm mb-6">You're in the top 15% of active users this week!</p>
-                <div className="flex items-center gap-4">
-                   <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">🏆</div>
-                   <div>
-                      <p className="text-xs font-bold text-indigo-300 uppercase tracking-widest">Next Badge</p>
-                      <p className="font-bold">Consistency King</p>
-                   </div>
-                </div>
+                <h3 className="text-lg font-bold mb-2">Debug Tools</h3>
+                <p className="text-indigo-200 text-sm mb-6">If your dashboard shows 0, click below to fix it!</p>
+                <button 
+                  onClick={handleMagicSeed}
+                  disabled={seeding}
+                  className="w-full bg-white text-indigo-900 font-bold py-3 rounded-xl hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {seeding ? 'Generating...' : '🪄 Generate Sample Data'}
+                </button>
              </div>
              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-indigo-500 rounded-full blur-3xl opacity-30"></div>
           </div>

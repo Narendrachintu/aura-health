@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Sleep = require('../models/Sleep');
 
 // @desc    Get sleep entries
@@ -100,7 +101,7 @@ exports.getSleepStats = async (req, res) => {
     const daily = await Sleep.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: new mongoose.Types.ObjectId(req.user.id),
           date: { $gte: startDate },
         },
       },
@@ -117,7 +118,7 @@ exports.getSleepStats = async (req, res) => {
     const qualityBreakdown = await Sleep.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: new mongoose.Types.ObjectId(req.user.id),
           date: { $gte: startDate },
         },
       },
@@ -129,7 +130,12 @@ exports.getSleepStats = async (req, res) => {
       },
     ]);
 
-    res.json({ success: true, data: { daily, qualityBreakdown } });
+    const totalNights = daily.length;
+    const totalDuration = daily.reduce((sum, d) => sum + d.totalDuration, 0);
+    const avgDuration = daily.length > 0 ? totalDuration / daily.length : 0;
+    const maxDuration = daily.length > 0 ? Math.max(...daily.map(d => d.totalDuration)) : 0;
+
+    res.json({ success: true, data: { daily, qualityBreakdown, totalNights, avgDuration, maxDuration } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

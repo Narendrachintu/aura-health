@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Water = require('../models/Water');
 
 exports.getWaterEntries = async (req, res) => {
@@ -66,11 +67,14 @@ exports.getWaterStats = async (req, res) => {
     const { days = 7 } = req.query;
     const startDate = new Date(); startDate.setDate(startDate.getDate() - parseInt(days));
     const daily = await Water.aggregate([
-      { $match: { user: req.user._id, date: { $gte: startDate } } },
+      { $match: { user: new mongoose.Types.ObjectId(req.user.id), date: { $gte: startDate } } },
       { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$date' } }, totalAmount: { $sum: '$amount' }, count: { $sum: 1 } } },
       { $sort: { _id: 1 } },
     ]);
-    res.json({ success: true, data: { daily } });
+    const totalAmount = daily.reduce((sum, d) => sum + d.totalAmount, 0);
+    const avgAmount = daily.length > 0 ? totalAmount / daily.length : 0;
+
+    res.json({ success: true, data: { daily, totalAmount, avgAmount } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -93,6 +93,7 @@ const authSlice = createSlice({
       .addCase(fetchMe.fulfilled, (state, action) => {
         state.user = action.payload;
         state.status = 'succeeded';
+        console.log('[DEBUG] Logged in as:', action.payload?.email);
       })
       .addCase(fetchMe.rejected, (state) => {
         state.user = null;

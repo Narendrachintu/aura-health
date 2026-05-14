@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Calorie = require('../models/Calorie');
 
 // @desc    Get calorie entries
@@ -101,7 +102,7 @@ exports.getCalorieStats = async (req, res) => {
     const daily = await Calorie.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: new mongoose.Types.ObjectId(req.user.id),
           date: { $gte: startDate },
         },
       },
@@ -121,7 +122,7 @@ exports.getCalorieStats = async (req, res) => {
     const mealBreakdown = await Calorie.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: new mongoose.Types.ObjectId(req.user.id),
           date: { $gte: startDate },
         },
       },
@@ -134,7 +135,12 @@ exports.getCalorieStats = async (req, res) => {
       },
     ]);
 
-    res.json({ success: true, data: { daily, mealBreakdown } });
+    const totalCalories = daily.reduce((sum, d) => sum + d.totalCalories, 0);
+    const avgCalories = daily.length > 0 ? totalCalories / daily.length : 0;
+    const avgProtein = daily.length > 0 ? daily.reduce((sum, d) => sum + d.totalProtein, 0) / daily.length : 0;
+    const maxCalories = daily.length > 0 ? Math.max(...daily.map(d => d.totalCalories)) : 0;
+
+    res.json({ success: true, data: { daily, mealBreakdown, totalCalories, avgCalories, avgProtein, maxCalories } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

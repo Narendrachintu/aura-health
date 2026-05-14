@@ -9,6 +9,9 @@ exports.getDashboard = async (req, res) => {
     const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
     const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
 
+    console.log(`[DEBUG] Dashboard Fetch for User: ${req.user.email} (${req.user._id})`);
+    console.log(`[DEBUG] Date Range: ${today.toISOString()} to ${tomorrow.toISOString()}`);
+
     const [todayWorkouts, todayCalories, todaySleep, todayWater, weekWorkouts, weekCalories, weekSleep, weekWater] = await Promise.all([
       Workout.find({ user: req.user.id, date: { $gte: today, $lt: tomorrow } }),
       Calorie.find({ user: req.user.id, date: { $gte: today, $lt: tomorrow } }),
@@ -41,7 +44,8 @@ exports.getDashboard = async (req, res) => {
       workoutDays: new Set(weekWorkouts.map(w => w.date.toISOString().split('T')[0])).size,
     };
 
-    res.json({ success: true, data: { today: todayStats, week: weekStats, goals: req.user.goals } });
+    console.log(`[DEBUG] Today Stats: ${JSON.stringify(todayStats)}`);
+    res.json({ success: true, data: { today: todayStats, week: weekStats, goals: req.user.goals, debug: { user: req.user.email } } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

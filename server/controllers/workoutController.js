@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Workout = require('../models/Workout');
 
 // @desc    Get all workouts for user
@@ -100,10 +101,13 @@ exports.getWorkoutStats = async (req, res) => {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - parseInt(days));
 
+    console.log(`[DEBUG] Workout Stats Fetch for User: ${req.user.email} (${req.user._id})`);
+    console.log(`[DEBUG] Days: ${days}, StartDate: ${startDate.toISOString()}`);
+
     const stats = await Workout.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: new mongoose.Types.ObjectId(req.user.id),
           date: { $gte: startDate },
         },
       },
@@ -121,7 +125,7 @@ exports.getWorkoutStats = async (req, res) => {
     const typeBreakdown = await Workout.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: new mongoose.Types.ObjectId(req.user.id),
           date: { $gte: startDate },
         },
       },
@@ -135,7 +139,14 @@ exports.getWorkoutStats = async (req, res) => {
       },
     ]);
 
-    res.json({ success: true, data: { daily: stats, typeBreakdown } });
+    const daily = stats;
+    const totalWorkouts = daily.reduce((sum, d) => sum + d.count, 0);
+    const totalDuration = daily.reduce((sum, d) => sum + d.totalDuration, 0);
+    const totalCaloriesBurned = daily.reduce((sum, d) => sum + d.totalCalories, 0);
+    const avgDuration = daily.length > 0 ? totalDuration / daily.length : 0;
+
+    console.log(`[DEBUG] Found ${daily.length} daily stats entries`);
+    res.json({ success: true, data: { daily, typeBreakdown, totalWorkouts, totalDuration, totalCaloriesBurned, avgDuration } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
